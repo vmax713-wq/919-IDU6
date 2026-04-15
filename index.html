@@ -14,18 +14,24 @@
         body { margin: 0; background-color: #000; color: #fff; font-family: "Segoe UI", Roboto, sans-serif; display: flex; height: 100vh; height: -webkit-fill-available; overflow: hidden; user-select: none; }
         html { height: -webkit-fill-available; }
 
+        /* 全局触摸响应提速 */
+        button, .tab-btn, .reset-btn {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         /* --- 默认全屏状态：左右排布 (50/50) --- */
         #left-half { width: 50vw; height: 100vh; border-right: 1px solid #333; display: flex; flex-direction: column; background: #0a0a0a; position: relative; }
         #right-half { width: 50vw; height: 100vh; display: flex; flex-direction: column; padding: 10px 15px; box-sizing: border-box; background: #000; }
 
-        /* 左侧面板布局 */
         #top-area { height: 40%; border-bottom: 2px solid #2a2a2a; display: flex; flex-direction: column; }
         .tab-header { display: flex; background: #151515; align-items: stretch; }
         
         .idu-logo { padding: 0 15px; display: flex; align-items: center; justify-content: center; color: #00e5ff; font-weight: 900; font-size: 18px; font-style: italic; background: #050505; border-right: 1px solid #333; letter-spacing: 2px; }
         
-        .tab-btn { flex: 1; padding: 10px 0; background: transparent; color: #555; border: none; border-bottom: 3px solid transparent; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .tab-btn { flex: 1; padding: 16px 0; background: transparent; color: #555; border: none; border-bottom: 3px solid transparent; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.1s; }
         .tab-btn.active { color: #00e5ff; border-bottom: 3px solid #00e5ff; background: #1a1a1a; }
+        
         .tab-content { flex: 1; padding: 12px; overflow-y: auto; }
         .pane { display: none; }
         .pane.active { display: block; }
@@ -50,15 +56,12 @@
         .copyright-watermark { position: absolute; bottom: 8px; left: 0; width: 100%; text-align: center; color: #333; font-size: 12px; font-weight: bold; font-family: monospace; pointer-events: none; }
 
         /* --- 右侧输入面板 --- */
-        
-        /* 草稿栏与确认键组合 */
         .draft-action-bar { display: flex; gap: 10px; margin-bottom: 12px; }
         #draft-bar { flex-grow: 1; height: 50px; box-sizing: border-box; background: #080808; border: 2px solid #222; display: flex; align-items: center; padding: 0 15px; font-size: 32px; font-weight: bold; color: #00e5ff; letter-spacing: 2px; border-radius: 6px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.8); }
         .confirm-btn-right { width: 120px; height: 50px; } 
         .confirm-btn-right:active { transform: translateY(4px); }
         .confirm-btn-right .key-btn { width: 100%; height: 100%; margin-bottom: 0; }
 
-        /* 棕色底座 */
         .btn-container { background-color: #2b201c; padding: 8px; border-radius: 8px; border: 1px solid #1a1210; display: grid; }
         
         button.key-btn { 
@@ -83,18 +86,11 @@
             background: linear-gradient(180deg, #222 0%, #111 100%); 
         }
 
-        /* 字母区域：5列网格，包含A-Z, DCT, DEL */
         #letter-grid { grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 8px; }
         #letter-grid button { height: 40px; }
-        .btn-span-2 { grid-column: span 2; } /* DCT 和 DEL 专属样式：占两格宽度 */
-        
-        /* 专属红/琥珀色删除键样式 */
+        .btn-span-2 { grid-column: span 2; } 
         .btn-del { color: #ff4d4d !important; border-top: 1px solid #662222 !important; background: linear-gradient(180deg, #3a1a1a 0%, #1a0a0a 100%) !important; }
-        .btn-del:active { background: linear-gradient(180deg, #1a0a0a 0%, #0a0000 100%) !important; }
 
-        .dct-icon { width: 35px; height: 25px; }
-
-        /* 数字与方向组合区域 */
         #bottom-input-area { display: grid; grid-template-columns: 1.5fr 1fr; gap: 10px; flex: 1; }
         #num-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
         #num-grid button { height: 50px; } 
@@ -104,43 +100,19 @@
         .d-right { grid-column: 3; grid-row: 2; }
         .d-down { grid-column: 2; grid-row: 3; }
 
-        /* --- 响应式悬浮窗/分屏状态 (极致窄屏适配) --- */
         @media (max-width: 800px) {
             body { flex-direction: column; height: 100vh; }
             #left-half { width: 100vw; height: 40vh; border-right: none; border-bottom: 2px solid #222; }
             #top-area { height: 50%; } 
-            
             #bottom-area { height: 50%; overflow: hidden; }
             #log-list { padding: 4px 10px; padding-bottom: 10px; gap: 4px; overflow: hidden; }
-            .log-item { padding: 4px 8px; border-left-width: 2px; } 
-            .log-cmd { font-size: 14px; }
-            .form-row { margin-bottom: 4px; padding-bottom: 4px; }
-            .form-label { font-size: 14px; }
-            .form-input { padding: 4px; font-size: 14px; height: 20px; width: 70px; }
-            .calc-result { font-size: 16px; width: 70px; }
-
-            /* 窄屏下压缩右半部键盘区 */
             #right-half { width: 100vw; height: 60vh; padding: 6px; padding-bottom: env(safe-area-inset-bottom); justify-content: start; }
-            
             .draft-action-bar { height: 42px; gap: 6px; margin-bottom: 8px; }
             #draft-bar { height: 100%; font-size: 20px; padding: 0 10px; }
             .confirm-btn-right { width: 90px; height: 100%; }
-            .confirm-btn-right .key-btn { margin-bottom: 0; box-shadow: 0 3px 0 #0d0d0d; font-size: 16px; }
-
-            .btn-container { padding: 6px; border-radius: 6px; }
-            
             #letter-grid { gap: 5px; margin-bottom: 6px; }
             #letter-grid button { height: 32px; font-size: 16px; margin-bottom: 2px; box-shadow: 0 3px 0 #0d0d0d; }
-            #letter-grid button:active { transform: translateY(3px); }
-
-            #bottom-input-area { gap: 6px; }
-            #num-grid { gap: 5px; }
-            #num-grid button { height: 42px; margin-bottom: 2px; box-shadow: 0 3px 0 #0d0d0d; }
-            #num-grid button:active { transform: translateY(3px); }
-            
-            #d-pad { gap: 4px; }
-            .dct-icon { width: 28px; height: 20px; }
-            .copyright-watermark { display: none; }
+            #num-grid button { height: 42px; margin-bottom: 2px; }
         }
     </style>
 </head>
@@ -174,9 +146,9 @@
                     <div class="form-row">
                         <span class="form-label">V1 / VR / V2 (Kts)</span>
                         <div style="display:flex; gap:5px;">
-                            <input type="number" class="form-input clearable" style="width:40px;" placeholder="V1">
-                            <input type="number" class="form-input clearable" style="width:40px;" placeholder="VR">
-                            <input type="number" class="form-input clearable" style="width:40px;" placeholder="V2">
+                            <input type="number" id="v1-spd" class="form-input clearable" style="width:42px; text-align:center;" placeholder="V1">
+                            <input type="number" id="vr-spd" class="form-input clearable" style="width:42px; text-align:center;" placeholder="VR">
+                            <input type="number" id="v2-spd" class="form-input clearable" style="width:42px; text-align:center;" placeholder="V2">
                         </div>
                     </div>
                     <div class="form-row">
@@ -223,17 +195,13 @@
     </div>
 
     <div id="right-half">
-        
         <div class="draft-action-bar">
             <div id="draft-bar"></div>
             <div class="confirm-btn-right">
                 <button class="key-btn confirm-btn" onclick="confirmInput()">CONFIRM</button>
             </div>
         </div>
-
-        <div id="letter-grid" class="btn-container">
-            </div>
-
+        <div id="letter-grid" class="btn-container"></div>
         <div id="bottom-input-area">
             <div id="num-grid" class="btn-container"></div>
             <div id="d-pad" class="btn-container">
@@ -260,7 +228,6 @@
         function calcLanding() {
             const weight = parseFloat(document.getElementById('ld-weight').value);
             document.getElementById('ga-vf0').innerText = getVF0(weight);
-
             const vref = parseFloat(document.getElementById('vref').value) || 0;
             const delta = parseFloat(document.getElementById('wind-corr').value) || 0;
             if (vref > 0) {
@@ -271,7 +238,7 @@
         }
 
         function packAndReset() {
-            const msg = "注意：点击确认将把本次 IDU6 中的飞行记录保存为文本文件至本地，并重置面板中的所有信息。\n\n是否确认执行 Pack & Reset？";
+            const msg = "注意：点击确认将把本次 IDU6 中的飞行数据及指令记录保存为文本，并重置面板所有信息。";
             if(confirm(msg)) {
                 let logData = "====== IDU6 FLIGHT RECORD ======\n";
                 logData += "Date: " + new Date().toLocaleDateString() + "\n\n";
@@ -279,10 +246,20 @@
                 let rawFltNo = document.getElementById('flt-no').value.trim().toUpperCase();
                 let safeFltNo = rawFltNo === "" ? "UNKNOWN" : rawFltNo;
                 
-                logData += "[ PRE-FLIGHT ]\n";
+                logData += "[ OVERVIEW ]\n";
                 logData += "Flight No: " + safeFltNo + "\n";
-                logData += "Transponder: " + (document.getElementById('transponder').value || "N/A") + "\n";
-                logData += "Est Landing Fuel: " + (document.getElementById('est-fuel').value || "N/A") + " Tons\n\n";
+                logData += "Transponder: " + (document.getElementById('transponder').value || "-") + "\n";
+                logData += "Est Landing Fuel: " + (document.getElementById('est-fuel').value || "-") + " Tons\n\n";
+
+                logData += "[ TAKEOFF ]\n";
+                logData += "V1/VR/V2: " + (document.getElementById('v1-spd').value || "-") + "/" + (document.getElementById('vr-spd').value || "-") + "/" + (document.getElementById('v2-spd').value || "-") + " Kts\n";
+                logData += "Takeoff Weight: " + (document.getElementById('to-weight').value || "-") + " Tons\n";
+                logData += "VF0: " + document.getElementById('to-vf0').innerText + "\n\n";
+
+                logData += "[ LANDING ]\n";
+                logData += "Landing Weight: " + (document.getElementById('ld-weight').value || "-") + " Tons\n";
+                logData += "VREF: " + (document.getElementById('vref').value || "-") + " + Δ: " + (document.getElementById('wind-corr').value || "-") + " = VAPP: " + document.getElementById('vapp-speed').innerText + "\n";
+                logData += "VF0 Speed: " + document.getElementById('ga-vf0').innerText + "\n\n";
                 
                 logData += "[ COMMAND LOG ]\n";
                 const logItems = document.querySelectorAll('.log-item');
@@ -298,11 +275,7 @@
                 }
                 
                 const today = new Date();
-                const yyyy = today.getFullYear();
-                const mm = String(today.getMonth() + 1).padStart(2, '0');
-                const dd = String(today.getDate()).padStart(2, '0');
-                const dateString = `${yyyy}${mm}${dd}`;
-                const fileName = `IDU6_${safeFltNo}_${dateString}.txt`;
+                const fileName = `IDU6_${safeFltNo}_${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}.txt`;
 
                 const blob = new Blob([logData], { type: "text/plain;charset=utf-8" });
                 const url = URL.createObjectURL(blob);
@@ -329,11 +302,8 @@
             draftBar.innerText = currentInput === "" ? '\u200B' : currentInput;
         }
 
-        // --- 核心更新：JS 动态生成完整的字母+功能网格 ---
-        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""); // 完整的 A-Z
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""); 
         const letterGrid = document.getElementById('letter-grid');
-        
-        // 生成 26 个字母键，Z 现在自动成为等大小的按键
         letters.forEach(l => {
             const btn = document.createElement('button');
             btn.className = "key-btn";
@@ -342,26 +312,18 @@
             letterGrid.appendChild(btn);
         });
 
-        // 紧接着 Z 之后插入占两格的 Direct To
         const dctBtn = document.createElement('button');
         dctBtn.className = "key-btn btn-span-2";
-        dctBtn.innerHTML = `
-            <svg class="dct-icon" viewBox="0 0 40 30">
-                <text x="2" y="24" font-family="Arial" font-weight="bold" font-size="28" fill="white">D</text>
-                <line x1="0" y1="15" x2="35" y2="15" stroke="white" stroke-width="3" />
-                <polygon points="32,10 40,15 32,20" fill="white" />
-            </svg>`;
+        dctBtn.innerHTML = `<svg style="width:35px;height:25px;" viewBox="0 0 40 30"><text x="2" y="24" font-family="Arial" font-weight="bold" font-size="28" fill="white">D</text><line x1="0" y1="15" x2="35" y2="15" stroke="white" stroke-width="3" /><polygon points="32,10 40,15 32,20" fill="white" /></svg>`;
         dctBtn.onclick = () => addText(' Direct To ');
         letterGrid.appendChild(dctBtn);
 
-        // 最后插入占两格且带特殊样式的 DEL
         const delBtn = document.createElement('button');
         delBtn.className = "key-btn btn-span-2 btn-del";
         delBtn.innerText = "DEL";
         delBtn.onclick = () => backspace();
         letterGrid.appendChild(delBtn);
 
-        // 生成数字键
         const nums = ["1","2","3","4","5","6","7","8","9",".","0"];
         const numGrid = document.getElementById('num-grid');
         nums.forEach(n => {
@@ -372,28 +334,13 @@
             numGrid.appendChild(btn);
         });
 
-        function addText(char) {
-            currentInput += char;
-            updateDraftBar();
-        }
-
-        function backspace() {
-            currentInput = currentInput.slice(0, -1);
-            updateDraftBar();
-        }
-
+        function addText(char) { currentInput += char; updateDraftBar(); }
+        function backspace() { currentInput = currentInput.slice(0, -1); updateDraftBar(); }
         function confirmInput() {
             if (currentInput.trim() === "") return; 
             const now = new Date();
-            const timeStr = String(now.getHours()).padStart(2, '0') + ":" + 
-                            String(now.getMinutes()).padStart(2, '0') + ":" + 
-                            String(now.getSeconds()).padStart(2, '0');
-            const logEntry = `
-                <div class="log-item">
-                    <span class="log-cmd">${currentInput}</span>
-                    <span class="log-time">${timeStr}</span>
-                </div>
-            `;
+            const timeStr = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0') + ":" + String(now.getSeconds()).padStart(2, '0');
+            const logEntry = `<div class="log-item"><span class="log-cmd">${currentInput}</span><span class="log-time">${timeStr}</span></div>`;
             document.getElementById('log-list').insertAdjacentHTML('afterbegin', logEntry);
             currentInput = "";
             updateDraftBar();
