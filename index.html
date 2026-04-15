@@ -2,65 +2,62 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>IDU6 - Flight Terminal</title>
     <style>
-        /* 基础样式 */
-        body { margin: 0; background-color: #000; color: #fff; font-family: "Segoe UI", Roboto, sans-serif; display: flex; height: 100vh; overflow: hidden; user-select: none; }
+        /* 基础样式：修正全屏高度，增加用户体验 */
+        body { margin: 0; background-color: #000; color: #fff; font-family: "Segoe UI", Roboto, sans-serif; display: flex; height: 100vh; height: -webkit-fill-available; overflow: hidden; user-select: none; }
+        html { height: -webkit-fill-available; }
 
-        /* 左侧面板：35% / 65% 布局 */
+        /* --- 默认全屏状态：左右排布 (50/50) --- */
         #left-half { width: 50vw; height: 100vh; border-right: 1px solid #333; display: flex; flex-direction: column; background: #0a0a0a; position: relative; }
-        
+        #right-half { width: 50vw; height: 100vh; display: flex; flex-direction: column; padding: 10px 15px; box-sizing: border-box; background: #000; }
+
+        /* 左侧面板：40% / 60% 布局 (为表单留出更多空间) */
         #top-area { height: 40%; border-bottom: 2px solid #2a2a2a; display: flex; flex-direction: column; }
         .tab-header { display: flex; background: #151515; align-items: stretch; }
         
-        /* IDU6 标识 */
         .idu-logo { padding: 0 15px; display: flex; align-items: center; justify-content: center; color: #00e5ff; font-weight: 900; font-size: 18px; font-style: italic; background: #050505; border-right: 1px solid #333; letter-spacing: 2px; }
         
-        .tab-btn { flex: 1; padding: 12px 0; background: transparent; color: #555; border: none; border-bottom: 3px solid transparent; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .tab-btn { flex: 1; padding: 10px 0; background: transparent; color: #555; border: none; border-bottom: 3px solid transparent; font-size: 16px; font-weight: bold; cursor: pointer; }
         .tab-btn.active { color: #00e5ff; border-bottom: 3px solid #00e5ff; background: #1a1a1a; }
-        .tab-content { flex: 1; padding: 15px; overflow-y: auto; }
+        .tab-content { flex: 1; padding: 12px; overflow-y: auto; }
         .pane { display: none; }
         .pane.active { display: block; }
 
-        /* 表单样式 */
-        .form-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #1a1a1a; padding-bottom: 8px; }
+        .form-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #1a1a1a; padding-bottom: 6px; }
         .form-label { color: #aaa; font-size: 16px; font-weight: bold; }
-        .form-input { background: #111; border: 1px solid #333; color: #00e5ff; padding: 8px; font-size: 18px; border-radius: 4px; width: 100px; text-align: right; font-family: monospace; }
+        .form-input { background: #111; border: 1px solid #333; color: #00e5ff; padding: 6px 8px; font-size: 18px; border-radius: 4px; width: 100px; text-align: right; font-family: monospace; }
         .form-input:focus { border-color: #00e5ff; outline: none; background: #1a1a1a; }
         .calc-result { color: #aaa; font-size: 22px; font-weight: bold; font-family: monospace; width: 100px; text-align: right; }
 
         /* 底部日志区 */
         #bottom-area { height: 60%; display: flex; flex-direction: column; position: relative; }
-        .log-title { padding: 8px 15px; background: #111; color: #888; font-size: 14px; font-weight: bold; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
+        .log-title { padding: 6px 15px; background: #111; color: #888; font-size: 14px; font-weight: bold; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
         
-        /* 航班重置按钮 (红灰机械感) */
-        .reset-btn { background: linear-gradient(180deg, #5a1a1a 0%, #3a0000 100%); color: #ffaaaa; border: 1px solid #220000; border-top: 1px solid #883333; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; box-shadow: 0 3px 0 #1a0000; transition: transform 0.05s, box-shadow 0.05s; }
+        .reset-btn { background: linear-gradient(180deg, #5a1a1a 0%, #3a0000 100%); color: #ffaaaa; border: 1px solid #220000; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; box-shadow: 0 3px 0 #1a0000; }
         .reset-btn:active { transform: translateY(3px); box-shadow: 0 0 0 #1a0000; background: #3a0000; }
 
-        #log-list { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; padding-bottom: 40px; }
-        .log-item { display: flex; justify-content: space-between; align-items: center; background: #151515; padding: 12px 15px; border-left: 4px solid #00e5ff; border-radius: 4px; border: 1px solid #222; border-left-width: 4px; }
-        .log-cmd { font-size: 20px; font-weight: bold; color: #fff; }
-        .log-time { font-size: 14px; color: #666; font-family: monospace; }
+        #log-list { flex: 1; overflow-y: auto; padding: 10px 15px; display: flex; flex-direction: column; gap: 8px; padding-bottom: 30px; }
+        .log-item { display: flex; justify-content: space-between; align-items: center; background: #151515; padding: 10px 12px; border-left: 3px solid #00e5ff; border-radius: 4px; border: 1px solid #222; border-left-width: 3px; }
+        .log-cmd { font-size: 18px; font-weight: bold; color: #fff; }
+        .log-time { font-size: 12px; color: #666; font-family: monospace; }
 
-        /* 版权水印 */
-        .copyright-watermark { position: absolute; bottom: 10px; left: 0; width: 100%; text-align: center; color: #333; font-size: 12px; font-weight: bold; font-family: monospace; pointer-events: none; }
+        .copyright-watermark { position: absolute; bottom: 8px; left: 0; width: 100%; text-align: center; color: #333; font-size: 12px; font-weight: bold; font-family: monospace; pointer-events: none; }
 
         /* --- 右侧输入面板 --- */
-        #right-half { width: 50vw; height: 100vh; display: flex; flex-direction: column; padding: 15px; box-sizing: border-box; background: #000; }
         
-        /* 草稿栏：改为青色 */
-        #draft-bar { height: 60px; background: #080808; border: 2px solid #222; margin-bottom: 20px; display: flex; align-items: center; padding: 0 15px; font-size: 32px; font-weight: bold; color: #00e5ff; letter-spacing: 2px; border-radius: 6px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.8); }
+        /* 压缩全屏草稿栏高度与边距 */
+        #draft-bar { height: 50px; box-sizing: border-box; background: #080808; border: 2px solid #222; margin-bottom: 12px; display: flex; align-items: center; padding: 0 15px; font-size: 28px; font-weight: bold; color: #00e5ff; letter-spacing: 2px; border-radius: 6px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.8); }
         
-        /* 棕色底座 */
-        .btn-container { background-color: #2b201c; padding: 12px; border-radius: 10px; border: 1px solid #1a1210; display: grid; }
+        /* 棕色底座：压缩内边距 */
+        .btn-container { background-color: #2b201c; padding: 8px; border-radius: 8px; border: 1px solid #1a1210; display: grid; }
         
-        /* 核心修改：极致 3D 机械按钮 */
+        /* 全屏：压缩立体厚度从 6px 到 4px */
         button.key-btn { 
             background: linear-gradient(180deg, #444 0%, #222 100%); 
             color: #fff; 
             border: 1px solid #111; 
-            border-top: 1px solid #666; /* 顶部高光 */
             border-radius: 6px; 
             font-size: 18px; 
             font-weight: bold; 
@@ -68,33 +65,30 @@
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            /* 产生厚度的阴影 */
-            box-shadow: 0 6px 0 #0d0d0d, 0 8px 5px rgba(0,0,0,0.6); 
+            box-shadow: 0 4px 0 #0d0d0d; 
             transition: transform 0.05s, box-shadow 0.05s, background 0.05s;
-            margin-bottom: 6px; /* 为阴影留出空间 */
+            margin-bottom: 6px; 
         }
         
-        /* 点击时的按压效果 */
         button.key-btn:active { 
-            transform: translateY(6px); 
-            box-shadow: 0 0 0 #0d0d0d, 0 1px 2px rgba(0,0,0,0.4); 
+            transform: translateY(4px); 
+            box-shadow: 0 0 0 #0d0d0d; 
             background: linear-gradient(180deg, #222 0%, #111 100%); 
-            border-top: 1px solid #333;
         }
 
-        #action-row { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 12px; margin-bottom: 15px; }
-        #action-row button { height: 60px; }
-        /* 取消确认键的绿色，保持统一白色字体，但可以稍微加深一点背景以示区分 */
+        /* 极致全屏排布调整：压缩高度与间距 */
+        #action-row { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 8px; margin-bottom: 10px; }
+        #action-row button { height: 55px; } /* 全屏从 60px 压缩至 55px */
         .confirm-btn { background: linear-gradient(180deg, #333 0%, #151515 100%) !important; color: #fff !important; }
 
-        #letter-grid { grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 15px; }
-        #letter-grid button { height: 45px; }
+        #letter-grid { grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 10px; }
+        #letter-grid button { height: 40px; } /* 全屏字母从 45px 压缩至 40px */
 
-        #bottom-input-area { display: grid; grid-template-columns: 1.5fr 1fr; gap: 15px; flex: 1; }
-        #num-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        #num-grid button { height: 55px; }
+        #bottom-input-area { display: grid; grid-template-columns: 1.5fr 1fr; gap: 10px; flex: 1; }
+        #num-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        #num-grid button { height: 50px; } /* 全屏数字从 55px 压缩至 50px */
         
-        #d-pad { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 8px; }
+        #d-pad { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 5px; }
         .d-up { grid-column: 2; grid-row: 1; }
         .d-left { grid-column: 1; grid-row: 2; }
         .d-right { grid-column: 3; grid-row: 2; }
@@ -102,12 +96,12 @@
         
         .dct-icon { width: 35px; height: 25px; }
 
-        /* --- 响应式悬浮窗/分屏状态 (针对 11寸 iPad 优化) --- */
+        /* --- 响应式悬浮窗/分屏状态 (针对 v2.0 出现的 cut-off 极致优化) --- */
         @media (max-width: 800px) {
-            body { flex-direction: column; }
-            #left-half { width: 100vw; height: 35vh; border-right: none; border-bottom: 2px solid #222; }
-            #top-area { height: 55%; } 
-            #bottom-area { height: 45%; }
+            body { flex-direction: column; height: 100vh; }
+            #left-half { width: 100vw; height: 40vh; border-right: none; border-bottom: 2px solid #222; } /* 窄屏调整比例 */
+            #top-area { height: 50%; } 
+            #bottom-area { height: 50%; }
             .log-item { padding: 8px 10px; border-left-width: 3px; } 
             .log-cmd { font-size: 16px; }
             .form-row { margin-bottom: 6px; padding-bottom: 4px; }
@@ -115,25 +109,26 @@
             .form-input { padding: 4px; font-size: 14px; height: 20px; width: 70px; }
             .calc-result { font-size: 16px; width: 70px; }
 
-            #right-half { width: 100vw; height: 65vh; padding: 10px; }
-            #draft-bar { height: 45px; font-size: 22px; margin-bottom: 12px; }
-            .btn-container { padding: 8px; border-radius: 8px; }
-            #action-row { margin-bottom: 8px; gap: 8px; }
-            #action-row button { height: 50px; margin-bottom: 4px; box-shadow: 0 4px 0 #0d0d0d; }
-            #action-row button:active { transform: translateY(4px); }
+            /* 窄屏下完全压缩右半部键盘区 */
+            #right-half { width: 100vw; height: 60vh; padding: 6px; padding-bottom: env(safe-area-inset-bottom); justify-content: start; }
+            #draft-bar { height: 38px; font-size: 20px; margin-bottom: 6px; }
+            .btn-container { padding: 6px; border-radius: 6px; }
+            #action-row { margin-bottom: 4px; gap: 4px; }
+            #action-row button { height: 42px; margin-bottom: 2px; box-shadow: 0 3px 0 #0d0d0d; font-size: 16px; } /* 极致窄屏压缩：功能键从 55px 到 42px */
+            #action-row button:active { transform: translateY(3px); }
             
-            #letter-grid { gap: 6px; margin-bottom: 8px; }
-            #letter-grid button { height: 38px; font-size: 16px; margin-bottom: 4px; box-shadow: 0 4px 0 #0d0d0d; }
-            #letter-grid button:active { transform: translateY(4px); }
+            #letter-grid { gap: 3px; margin-bottom: 4px; }
+            #letter-grid button { height: 32px; font-size: 16px; margin-bottom: 2px; box-shadow: 0 3px 0 #0d0d0d; } /* 极致窄屏压缩：字母键从 38px 到 32px */
+            #letter-grid button:active { transform: translateY(3px); }
             
-            #bottom-input-area { gap: 8px; }
-            #num-grid { gap: 6px; }
-            #num-grid button { height: 45px; margin-bottom: 4px; box-shadow: 0 4px 0 #0d0d0d; }
-            #num-grid button:active { transform: translateY(4px); }
+            #bottom-input-area { gap: 4px; }
+            #num-grid { gap: 3px; }
+            #num-grid button { height: 38px; margin-bottom: 2px; box-shadow: 0 3px 0 #0d0d0d; } /* 极致窄屏压缩：数字键从 50px 到 38px */
+            #num-grid button:active { transform: translateY(3px); }
             
-            #d-pad { gap: 4px; }
+            #d-pad { gap: 3px; }
             .dct-icon { width: 28px; height: 20px; }
-            .copyright-watermark { display: none; } /* 窄屏隐藏水印节省空间 */
+            .copyright-watermark { display: none; }
         }
     </style>
 </head>
@@ -243,7 +238,6 @@
     </div>
 
     <script>
-        // 通用公式：重量 * 2 + 70，最大限制 210
         function getVF0(weight) {
             if (!weight || weight <= 0) return "---";
             let speed = (weight * 2) + 70;
@@ -268,7 +262,6 @@
             }
         }
 
-        // 打包下载并重置逻辑 (动态文件名)
         function packAndReset() {
             const msg = "注意：点击确认将把本次 IDU6 中的飞行记录保存为文本文件至本地，并重置面板中的所有信息。\n\n是否确认执行 Pack & Reset？";
             if(confirm(msg)) {
@@ -317,13 +310,16 @@
                 document.getElementById('vapp-speed').innerText = "---";
                 document.getElementById('log-list').innerHTML = "";
                 currentInput = "";
-                draftBar.innerText = "";
+                updateDraftBar();
             }
         }
 
-        // 键盘输入逻辑
         let currentInput = "";
         const draftBar = document.getElementById('draft-bar');
+
+        function updateDraftBar() {
+            draftBar.innerText = currentInput === "" ? '\u200B' : currentInput;
+        }
 
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
         const letterGrid = document.getElementById('letter-grid');
@@ -347,12 +343,12 @@
 
         function addText(char) {
             currentInput += char;
-            draftBar.innerText = currentInput;
+            updateDraftBar();
         }
 
         function backspace() {
             currentInput = currentInput.slice(0, -1);
-            draftBar.innerText = currentInput;
+            updateDraftBar();
         }
 
         function confirmInput() {
@@ -369,7 +365,7 @@
             `;
             document.getElementById('log-list').insertAdjacentHTML('afterbegin', logEntry);
             currentInput = "";
-            draftBar.innerText = "";
+            updateDraftBar();
         }
 
         function switchTab(tabId) {
@@ -378,6 +374,8 @@
             document.getElementById('btn-' + tabId).classList.add('active');
             document.getElementById('pane-' + tabId).classList.add('active');
         }
+
+        updateDraftBar();
     </script>
 </body>
 </html>
