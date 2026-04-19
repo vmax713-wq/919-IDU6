@@ -3,88 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-    
     <title>IDU6 - Flight Terminal</title>
     <style>
-        /* 基础样式 */
-        body { margin: 0; background-color: #000; color: #fff; font-family: "Segoe UI", Roboto, sans-serif; display: flex; height: 100vh; height: -webkit-fill-available; overflow: hidden; user-select: none; }
-        html { height: -webkit-fill-available; }
+        body { margin: 0; background-color: #000; color: #fff; font-family: "Segoe UI", Roboto, sans-serif; display: flex; height: 100vh; height: -webkit-fill-available; overflow: hidden; user-select: none; touch-action: none; }
+        html { height: -webkit-fill-available; touch-action: none; }
+        button, .tab-btn, .reset-btn { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 
-        /* 全局触摸响应提速 */
-        button, .tab-btn, .reset-btn {
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* --- 默认全屏状态：左右排布 (50/50) --- */
-        #left-half { width: 50vw; height: 100vh; border-right: 1px solid #333; display: flex; flex-direction: column; background: #0a0a0a; position: relative; }
-        #right-half { width: 50vw; height: 100vh; display: flex; flex-direction: column; padding: 10px 15px; box-sizing: border-box; background: #000; }
+        #left-half { width: 50%; height: 100vh; border-right: 1px solid #333; display: flex; flex-direction: column; background: #0a0a0a; position: relative; }
+        #right-half { width: 50%; height: 100vh; display: flex; flex-direction: column; padding: 10px 15px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); box-sizing: border-box; background: #000; }
 
         #top-area { height: 40%; border-bottom: 2px solid #2a2a2a; display: flex; flex-direction: column; }
-        .tab-header { display: flex; background: #151515; align-items: stretch; }
         
-        .idu-logo { padding: 0 15px; display: flex; align-items: center; justify-content: center; color: #00e5ff; font-weight: 900; font-size: 18px; font-style: italic; background: #050505; border-right: 1px solid #333; letter-spacing: 2px; }
+        /* 核心修改 1：全局顶栏，整合 Logo 和 航班号 */
+        .global-header { display: flex; align-items: center; justify-content: space-between; background: #050505; border-bottom: 1px solid #222; }
+        .idu-logo { padding: 10px 15px; color: #00e5ff; font-weight: 900; font-size: 18px; font-style: italic; letter-spacing: 2px; }
+        .flt-input-group { display: flex; align-items: center; padding-right: 15px; gap: 8px; }
         
-        .tab-btn { flex: 1; padding: 16px 0; background: transparent; color: #555; border: none; border-bottom: 3px solid transparent; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.1s; }
+        .tab-header { display: flex; background: #151515; align-items: stretch; border-bottom: 1px solid #222; }
+        .tab-btn { flex: 1; padding: 12px 0; background: transparent; color: #555; border: none; border-bottom: 3px solid transparent; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.1s; }
         .tab-btn.active { color: #00e5ff; border-bottom: 3px solid #00e5ff; background: #1a1a1a; }
-        
-        .tab-content { flex: 1; padding: 12px; overflow-y: auto; }
+        .tab-content { flex: 1; padding: 10px 12px; overflow-y: auto; touch-action: pan-y; }
         .pane { display: none; }
         .pane.active { display: block; }
 
-        .form-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #1a1a1a; padding-bottom: 6px; }
-        .form-label { color: #aaa; font-size: 16px; font-weight: bold; }
-        .form-input { background: #111; border: 1px solid #333; color: #00e5ff; padding: 6px 8px; font-size: 18px; border-radius: 4px; width: 100px; text-align: right; font-family: monospace; }
-        .form-input:focus { border-color: #00e5ff; outline: none; background: #1a1a1a; }
-        .calc-result { color: #aaa; font-size: 22px; font-weight: bold; font-family: monospace; width: 100px; text-align: right; }
+        /* 核心修改 2：极致压缩表单行距与内边距 */
+        .form-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; border-bottom: 1px solid #1a1a1a; padding-bottom: 4px; }
+        .form-label { color: #aaa; font-size: 15px; font-weight: bold; }
+        .form-input { background: #111; border: 2px solid #333; color: #00e5ff; padding: 4px 6px; font-size: 16px; border-radius: 4px; width: 90px; text-align: right; font-family: monospace; outline: none; transition: border-color 0.2s, background 0.2s; }
+        .form-input.sim-focus { border-color: #ff9900; background: #2a1a00; } 
+        .calc-result { color: #aaa; font-size: 20px; font-weight: bold; font-family: monospace; width: 90px; text-align: right; }
 
         #bottom-area { height: 60%; display: flex; flex-direction: column; position: relative; transition: all 0.2s; }
         .log-title { padding: 6px 15px; background: #111; color: #888; font-size: 14px; font-weight: bold; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
-        
         .reset-btn { background: linear-gradient(180deg, #5a1a1a 0%, #3a0000 100%); color: #ffaaaa; border: 1px solid #220000; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; box-shadow: 0 3px 0 #1a0000; }
         .reset-btn:active { transform: translateY(3px); box-shadow: 0 0 0 #1a0000; background: #3a0000; }
-
-        #log-list { flex: 1; overflow-y: auto; padding: 10px 15px; display: flex; flex-direction: column; gap: 8px; padding-bottom: 30px; }
+        
+        #log-list { flex: 1; overflow-y: auto; padding: 10px 15px; display: flex; flex-direction: column; gap: 8px; padding-bottom: 30px; touch-action: pan-y; }
         .log-item { display: flex; justify-content: space-between; align-items: center; background: #151515; padding: 10px 12px; border-left: 3px solid #00e5ff; border-radius: 4px; border: 1px solid #222; border-left-width: 3px; }
         .log-cmd { font-size: 18px; font-weight: bold; color: #fff; }
         .log-time { font-size: 12px; color: #666; font-family: monospace; }
-
         .copyright-watermark { position: absolute; bottom: 8px; left: 0; width: 100%; text-align: center; color: #333; font-size: 12px; font-weight: bold; font-family: monospace; pointer-events: none; }
 
         /* --- 右侧输入面板 --- */
         .draft-action-bar { display: flex; gap: 10px; margin-bottom: 12px; }
-        #draft-bar { flex-grow: 1; height: 50px; box-sizing: border-box; background: #080808; border: 2px solid #222; display: flex; align-items: center; padding: 0 15px; font-size: 32px; font-weight: bold; color: #00e5ff; letter-spacing: 2px; border-radius: 6px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.8); }
+        #draft-bar { flex-grow: 1; height: 50px; box-sizing: border-box; background: #080808; border: 2px solid #222; display: flex; align-items: center; padding: 0 15px; font-size: 32px; font-weight: bold; color: #00e5ff; letter-spacing: 2px; border-radius: 6px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.8); transition: border-color 0.2s; overflow: hidden; white-space: nowrap; }
+        #draft-bar.sim-focus { border-color: #00e5ff; }
         .confirm-btn-right { width: 120px; height: 50px; } 
         .confirm-btn-right:active { transform: translateY(4px); }
         .confirm-btn-right .key-btn { width: 100%; height: 100%; margin-bottom: 0; }
 
         .btn-container { background-color: #2b201c; padding: 8px; border-radius: 8px; border: 1px solid #1a1210; display: grid; }
-        
-        button.key-btn { 
-            background: linear-gradient(180deg, #444 0%, #222 100%); 
-            color: #fff; 
-            border: 1px solid #111; 
-            border-radius: 6px; 
-            font-size: 18px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            box-shadow: 0 4px 0 #0d0d0d; 
-            transition: transform 0.05s, box-shadow 0.05s, background 0.05s;
-            margin-bottom: 6px; 
-        }
-        
-        button.key-btn:active { 
-            transform: translateY(4px); 
-            box-shadow: 0 0 0 #0d0d0d; 
-            background: linear-gradient(180deg, #222 0%, #111 100%); 
-        }
+        button.key-btn { background: linear-gradient(180deg, #444 0%, #222 100%); color: #fff; border: 1px solid #111; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 0 #0d0d0d; transition: transform 0.05s, box-shadow 0.05s, background 0.05s; margin-bottom: 6px; }
+        button.key-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #0d0d0d; background: linear-gradient(180deg, #222 0%, #111 100%); }
 
         #letter-grid { grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 8px; }
         #letter-grid button { height: 40px; }
@@ -102,17 +75,27 @@
 
         @media (max-width: 800px) {
             body { flex-direction: column; height: 100vh; }
-            #left-half { width: 100vw; height: 40vh; border-right: none; border-bottom: 2px solid #222; }
+            #left-half { width: 100%; height: 40vh; border-right: none; border-bottom: 2px solid #222; }
             #top-area { height: 50%; } 
-            #bottom-area { height: 50%; overflow: hidden; }
-            #log-list { padding: 4px 10px; padding-bottom: 10px; gap: 4px; overflow: hidden; }
-            #right-half { width: 100vw; height: 60vh; padding: 6px; padding-bottom: env(safe-area-inset-bottom); justify-content: start; }
+            
+            #bottom-area { height: 50%; overflow: hidden; touch-action: none; }
+            #log-list { padding: 4px 10px; padding-bottom: 10px; gap: 4px; overflow: hidden; touch-action: none; }
+            
+            /* 核心修改 3：窄屏键盘区底部抬升，留出大量防误触空间 */
+            #right-half { width: 100%; height: 60vh; padding: 6px; padding-bottom: calc(24px + env(safe-area-inset-bottom)); justify-content: flex-start; }
+            
             .draft-action-bar { height: 42px; gap: 6px; margin-bottom: 8px; }
             #draft-bar { height: 100%; font-size: 20px; padding: 0 10px; }
             .confirm-btn-right { width: 90px; height: 100%; }
             #letter-grid { gap: 5px; margin-bottom: 6px; }
             #letter-grid button { height: 32px; font-size: 16px; margin-bottom: 2px; box-shadow: 0 3px 0 #0d0d0d; }
             #num-grid button { height: 42px; margin-bottom: 2px; }
+            
+            /* 窄屏表单进一步压缩 */
+            .form-row { margin-bottom: 4px; padding-bottom: 2px; }
+            .form-input { padding: 2px 4px; font-size: 14px; height: 18px; width: 70px; }
+            .form-label { font-size: 13px; }
+            .calc-result { font-size: 16px; width: 70px; }
         }
     </style>
 </head>
@@ -120,40 +103,32 @@
 
     <div id="left-half">
         <div id="top-area">
-            <div class="tab-header">
+            <div class="global-header">
                 <div class="idu-logo">IDU6</div>
-                <button id="btn-overview" class="tab-btn active" onclick="switchTab('overview')">Overview</button>
-                <button id="btn-takeoff" class="tab-btn" onclick="switchTab('takeoff')">Takeoff</button>
+                <div class="flt-input-group">
+                    <span class="form-label" style="color:#666;">FLT</span>
+                    <input type="text" id="flt-no" inputmode="none" class="form-input clearable" placeholder="MU1234" style="text-transform: uppercase;">
+                </div>
+            </div>
+            
+            <div class="tab-header">
+                <button id="btn-takeoff" class="tab-btn active" onclick="switchTab('takeoff')">Takeoff</button>
                 <button id="btn-landing" class="tab-btn" onclick="switchTab('landing')">Landing</button>
             </div>
+            
             <div class="tab-content">
-                <div id="pane-overview" class="pane active">
-                    <div class="form-row">
-                        <span class="form-label">Flight No.</span>
-                        <input type="text" id="flt-no" class="form-input clearable" placeholder="MU1234" style="text-transform: uppercase;">
-                    </div>
-                    <div class="form-row">
-                        <span class="form-label">Transponder</span>
-                        <input type="number" id="transponder" class="form-input clearable" placeholder="0000">
-                    </div>
-                    <div class="form-row">
-                        <span class="form-label">Est Landing Fuel</span>
-                        <input type="number" id="est-fuel" class="form-input clearable" placeholder="Tons">
-                    </div>
-                </div>
-
-                <div id="pane-takeoff" class="pane">
+                <div id="pane-takeoff" class="pane active">
                     <div class="form-row">
                         <span class="form-label">V1 / VR / V2 (Kts)</span>
                         <div style="display:flex; gap:5px;">
-                            <input type="number" id="v1-spd" class="form-input clearable" style="width:42px; text-align:center;" placeholder="V1">
-                            <input type="number" id="vr-spd" class="form-input clearable" style="width:42px; text-align:center;" placeholder="VR">
-                            <input type="number" id="v2-spd" class="form-input clearable" style="width:42px; text-align:center;" placeholder="V2">
+                            <input type="text" id="v1-spd" inputmode="none" class="form-input clearable" style="width:38px; text-align:center;" placeholder="V1">
+                            <input type="text" id="vr-spd" inputmode="none" class="form-input clearable" style="width:38px; text-align:center;" placeholder="VR">
+                            <input type="text" id="v2-spd" inputmode="none" class="form-input clearable" style="width:38px; text-align:center;" placeholder="V2">
                         </div>
                     </div>
                     <div class="form-row">
                         <span class="form-label">Takeoff Weight (Tons)</span>
-                        <input type="number" id="to-weight" class="form-input clearable" placeholder="TOW" oninput="calcTakeoff()">
+                        <input type="text" id="to-weight" inputmode="none" class="form-input clearable" placeholder="TOW" oninput="calcTakeoff()">
                     </div>
                     <div class="form-row">
                         <span class="form-label">VF0</span>
@@ -164,14 +139,14 @@
                 <div id="pane-landing" class="pane">
                     <div class="form-row">
                         <span class="form-label">Landing Weight (Tons)</span>
-                        <input type="number" id="ld-weight" class="form-input clearable" placeholder="LDW" oninput="calcLanding()">
+                        <input type="text" id="ld-weight" inputmode="none" class="form-input clearable" placeholder="LDW" oninput="calcLanding()">
                     </div>
                     <div class="form-row">
                         <span class="form-label">VREF + Δ = VAPP</span>
                         <div style="display:flex; gap:5px; align-items:center;">
-                            <input type="number" id="vref" class="form-input clearable" style="width:42px; text-align:center; padding:6px 2px;" placeholder="REF" oninput="calcLanding()">
+                            <input type="text" id="vref" inputmode="none" class="form-input clearable" style="width:38px; text-align:center; padding:6px 2px;" placeholder="REF" oninput="calcLanding()">
                             <span style="color:#555; font-weight:bold;">+</span>
-                            <input type="number" id="wind-corr" class="form-input clearable" style="width:36px; text-align:center; padding:6px 2px;" placeholder="Δ" oninput="calcLanding()">
+                            <input type="text" id="wind-corr" inputmode="none" class="form-input clearable" style="width:32px; text-align:center; padding:6px 2px;" placeholder="Δ" oninput="calcLanding()">
                             <span style="color:#555; font-weight:bold; margin:0 2px;">=</span>
                             <div id="vapp-speed" class="calc-result" style="color:#00e5ff; width:45px; text-align:right;">---</div>
                         </div>
@@ -196,7 +171,7 @@
 
     <div id="right-half">
         <div class="draft-action-bar">
-            <div id="draft-bar"></div>
+            <div id="draft-bar" class="sim-focus"></div>
             <div class="confirm-btn-right">
                 <button class="key-btn confirm-btn" onclick="confirmInput()">CONFIRM</button>
             </div>
@@ -214,6 +189,95 @@
     </div>
 
     <script>
+        document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+
+        let currentFocusElement = null;
+        const draftBar = document.getElementById('draft-bar');
+        let currentDraftText = "";
+
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('mousedown', (e) => { e.preventDefault(); setFocus(input); });
+            input.addEventListener('touchstart', (e) => { e.preventDefault(); setFocus(input); });
+        });
+
+        draftBar.addEventListener('mousedown', () => setFocus(null));
+        draftBar.addEventListener('touchstart', () => setFocus(null));
+
+        function setFocus(element) {
+            document.querySelectorAll('.sim-focus').forEach(el => el.classList.remove('sim-focus'));
+            currentFocusElement = element;
+            if(element) {
+                element.classList.add('sim-focus');
+            } else {
+                draftBar.classList.add('sim-focus');
+            }
+        }
+
+        function addText(char) {
+            if(currentFocusElement) {
+                currentFocusElement.value += char;
+                if(currentFocusElement.oninput) currentFocusElement.oninput();
+                saveState();
+            } else {
+                currentDraftText += char;
+                updateDraftBar();
+                saveState();
+            }
+        }
+
+        function backspace() {
+            if(currentFocusElement) {
+                currentFocusElement.value = currentFocusElement.value.slice(0, -1);
+                if(currentFocusElement.oninput) currentFocusElement.oninput();
+                saveState();
+            } else {
+                currentDraftText = currentDraftText.slice(0, -1);
+                updateDraftBar();
+                saveState();
+            }
+        }
+
+        function updateDraftBar() {
+            draftBar.innerText = currentDraftText === "" ? '\u200B' : currentDraftText;
+            draftBar.scrollLeft = draftBar.scrollWidth; 
+        }
+
+        function confirmInput() {
+            if (currentDraftText.trim() === "") {
+                setFocus(null);
+                return;
+            }
+            const now = new Date();
+            const timeStr = String(now.getUTCHours()).padStart(2, '0') + String(now.getUTCMinutes()).padStart(2, '0') + "Z";
+            
+            const logEntry = `<div class="log-item"><span class="log-cmd">${currentDraftText}</span><span class="log-time">${timeStr}</span></div>`;
+            document.getElementById('log-list').insertAdjacentHTML('afterbegin', logEntry);
+            
+            currentDraftText = "";
+            updateDraftBar();
+            setFocus(null); 
+            saveState();
+        }
+
+        function saveState() {
+            const data = { draft: currentDraftText, log: document.getElementById('log-list').innerHTML, inputs: {} };
+            document.querySelectorAll('.clearable').forEach(el => data.inputs[el.id] = el.value);
+            localStorage.setItem('idu6_state', JSON.stringify(data));
+        }
+
+        function loadState() {
+            const data = JSON.parse(localStorage.getItem('idu6_state'));
+            if(data) {
+                currentDraftText = data.draft || "";
+                document.getElementById('log-list').innerHTML = data.log || "";
+                for(let id in data.inputs) {
+                    if(document.getElementById(id)) document.getElementById(id).value = data.inputs[id];
+                }
+                updateDraftBar();
+                calcTakeoff(); calcLanding();
+            }
+        }
+
         function getVF0(weight) {
             if (!weight || weight <= 0) return "---";
             let speed = (weight * 2) + 70;
@@ -223,6 +287,7 @@
         function calcTakeoff() {
             const weight = parseFloat(document.getElementById('to-weight').value);
             document.getElementById('to-vf0').innerText = getVF0(weight);
+            saveState();
         }
 
         function calcLanding() {
@@ -235,21 +300,19 @@
             } else {
                 document.getElementById('vapp-speed').innerText = "---";
             }
+            saveState();
         }
 
         function packAndReset() {
             const msg = "注意：点击确认将把本次 IDU6 中的飞行数据及指令记录保存为文本，并重置面板所有信息。";
             if(confirm(msg)) {
                 let logData = "====== IDU6 FLIGHT RECORD ======\n";
-                logData += "Date: " + new Date().toLocaleDateString() + "\n\n";
+                logData += "Date: " + new Date().toLocaleDateString() + " (UTC Recorded)\n\n";
                 
                 let rawFltNo = document.getElementById('flt-no').value.trim().toUpperCase();
                 let safeFltNo = rawFltNo === "" ? "UNKNOWN" : rawFltNo;
                 
-                logData += "[ OVERVIEW ]\n";
-                logData += "Flight No: " + safeFltNo + "\n";
-                logData += "Transponder: " + (document.getElementById('transponder').value || "-") + "\n";
-                logData += "Est Landing Fuel: " + (document.getElementById('est-fuel').value || "-") + " Tons\n\n";
+                logData += "Flight No: " + safeFltNo + "\n\n";
 
                 logData += "[ TAKEOFF ]\n";
                 logData += "V1/VR/V2: " + (document.getElementById('v1-spd').value || "-") + "/" + (document.getElementById('vr-spd').value || "-") + "/" + (document.getElementById('v2-spd').value || "-") + " Kts\n";
@@ -290,16 +353,13 @@
                 document.getElementById('ga-vf0').innerText = "---";
                 document.getElementById('vapp-speed').innerText = "---";
                 document.getElementById('log-list').innerHTML = "";
-                currentInput = "";
+                currentDraftText = "";
                 updateDraftBar();
+                
+                localStorage.removeItem('idu6_state');
+                setFocus(null);
+                switchTab('takeoff'); // 默认跳回起飞页
             }
-        }
-
-        let currentInput = "";
-        const draftBar = document.getElementById('draft-bar');
-
-        function updateDraftBar() {
-            draftBar.innerText = currentInput === "" ? '\u200B' : currentInput;
         }
 
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""); 
@@ -308,6 +368,8 @@
             const btn = document.createElement('button');
             btn.className = "key-btn";
             btn.innerText = l;
+            btn.onmousedown = (e) => e.preventDefault();
+            btn.ontouchstart = (e) => e.preventDefault();
             btn.onclick = () => addText(l);
             letterGrid.appendChild(btn);
         });
@@ -315,12 +377,16 @@
         const dctBtn = document.createElement('button');
         dctBtn.className = "key-btn btn-span-2";
         dctBtn.innerHTML = `<svg style="width:35px;height:25px;" viewBox="0 0 40 30"><text x="2" y="24" font-family="Arial" font-weight="bold" font-size="28" fill="white">D</text><line x1="0" y1="15" x2="35" y2="15" stroke="white" stroke-width="3" /><polygon points="32,10 40,15 32,20" fill="white" /></svg>`;
+        dctBtn.onmousedown = (e) => e.preventDefault();
+        dctBtn.ontouchstart = (e) => e.preventDefault();
         dctBtn.onclick = () => addText(' Direct To ');
         letterGrid.appendChild(dctBtn);
 
         const delBtn = document.createElement('button');
         delBtn.className = "key-btn btn-span-2 btn-del";
         delBtn.innerText = "DEL";
+        delBtn.onmousedown = (e) => e.preventDefault();
+        delBtn.ontouchstart = (e) => e.preventDefault();
         delBtn.onclick = () => backspace();
         letterGrid.appendChild(delBtn);
 
@@ -330,21 +396,16 @@
             const btn = document.createElement('button');
             btn.className = "key-btn";
             btn.innerText = n;
+            btn.onmousedown = (e) => e.preventDefault();
+            btn.ontouchstart = (e) => e.preventDefault();
             btn.onclick = () => addText(n);
             numGrid.appendChild(btn);
         });
 
-        function addText(char) { currentInput += char; updateDraftBar(); }
-        function backspace() { currentInput = currentInput.slice(0, -1); updateDraftBar(); }
-        function confirmInput() {
-            if (currentInput.trim() === "") return; 
-            const now = new Date();
-            const timeStr = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0') + ":" + String(now.getSeconds()).padStart(2, '0');
-            const logEntry = `<div class="log-item"><span class="log-cmd">${currentInput}</span><span class="log-time">${timeStr}</span></div>`;
-            document.getElementById('log-list').insertAdjacentHTML('afterbegin', logEntry);
-            currentInput = "";
-            updateDraftBar();
-        }
+        document.querySelectorAll('#d-pad button').forEach(btn => {
+            btn.onmousedown = (e) => e.preventDefault();
+            btn.ontouchstart = (e) => e.preventDefault();
+        });
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -353,7 +414,10 @@
             document.getElementById('pane-' + tabId).classList.add('active');
         }
 
-        updateDraftBar();
+        window.onload = () => {
+            loadState();
+            setFocus(null);
+        };
     </script>
 </body>
 </html>
